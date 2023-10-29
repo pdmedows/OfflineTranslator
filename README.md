@@ -60,7 +60,7 @@ This project utilizes various open-source libraries and models, including Lingua
 This project is open-source and released under the [MIT License](LICENSE).
 
 ### Author
-[Your Name]
+Philip-David Medows
 
 ### Contact Information
-For inquiries or feedback related to this project, please contact [your_email@example.com].
+For inquiries or feedback related to this project, please contact pdmedows@gmail.com
