@@ -1,7 +1,9 @@
 # OfflineTranslator
- ![Overview of Translation Pipeline]([Drawing1.pdf)](https://github.com/pdmedows/OfflineTranslator/blob/main/Drawing1.pdf)
- <img src="[Drawing1.pdf](https://github.com/pdmedows/OfflineTranslator/blob/main/Drawing1.pdf)" alt="Overview of Translation Pipeline" width="300" height="200">
-
+<br>
+<p align="center">
+<img src="" width="500"></img>
+</p>
+<br>
 
 
 
