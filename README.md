@@ -51,6 +51,14 @@ This project is a Python-based application that seamlessly translates and genera
 4. The translated text will be displayed on the console, along with the detected language and its translation.
 5. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
 
+<br>
+<p align="center">
+<img src="Drawing(1).png" ></img>
+</p>
+<br>
+
+
+
 ### Language Mapping
 The project includes dictionaries for language codes and mapping between languages to facilitate translation and audio generation. You can expand these dictionaries to add support for additional languages as needed.
 
