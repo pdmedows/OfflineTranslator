@@ -1,5 +1,7 @@
 # OfflineTranslator
  ![Overview of Translation Pipeline](Drawing1.pdf)
+ <img src="Drawing1.pdf" alt="Overview of Translation Pipeline" width="300" height="200">
+
 
 
 
