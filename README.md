@@ -8,8 +8,7 @@
 
 
 ### Description
-This project is a Python-based application that seamlessly translates and generates audio content in real time. It listens to incoming audio, detects speech, identifies the language, translates the text, and generates audio in the target language. This multilingual audio translation and generation system can be invaluable for communication, content creation, and various applications where language barriers are a challenge.
-
+This project is a Python-based application that seamlessly translates and generates audio content in real time. It listens to incoming audio, detects speech, identifies the language, translates the text, and generates audio in the target language. 
 ### Features
 - **Real-time Audio Processing:** The application continuously listens to audio input and processes it in real time.
 - **Speech Detection:** Utilizes the SpeechRecognition library to detect speech and distinguish spoken content from silence.
