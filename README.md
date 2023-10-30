@@ -1,5 +1,5 @@
 # OfflineTranslator
- ![Overview of Translation Pipeline](Image URL)
+ ![Overview of Translation Pipeline](Drawing1.pdf)
 
 
 
