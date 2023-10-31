@@ -1,7 +1,7 @@
 # OfflineTranslator
 <br>
 <p align="center">
-<img src="Drawing1(1).png" ></img>
+<img src="Drawing1(2).png" ></img>
 </p>
 <br>
 
