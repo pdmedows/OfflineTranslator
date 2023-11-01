@@ -1,3 +1,39 @@
+
+import argparse
+import io
+import os
+from datetime import datetime, timedelta
+from queue import Queue
+from sys import platform
+from tempfile import NamedTemporaryFile
+from time import sleep
+
+import nltk  # we'll use this to split into sentences
+import numpy as np
+import scipy.io.wavfile as wav
+import sounddevice as sd
+import speech_recognition as sr
+import torch
+import whisper
+from bark import SAMPLE_RATE, generate_audio
+from bark.generation import generate_text_semantic, preload_models
+from IPython.display import Audio
+from lingua import Language, LanguageDetectorBuilder
+from scipy.io.wavfile import write as write_wav
+from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
+
+# Bark requieres 12GB of VRAM, so we need to offload it to the CPU
+os.environ["SUNO_OFFLOAD_CPU"] = "True"
+os.environ["SUNO_USE_SMALL_MODELS"] = "True"
+
+bartModel = MBartForConditionalGeneration.from_pretrained(
+    "facebook/mbart-large-50-many-to-many-mmt"
+)
+tokenizer = MBart50TokenizerFast.from_pretrained(
+    "facebook/mbart-large-50-many-to-many-mmt"
+)
+
+
 # This dictionary includes all the MBart 50 language codes and detected languages.
 lingua_to_mbart_languages = {
     "Language.ARABIC": "ar_AR",
@@ -51,11 +87,10 @@ lingua_to_mbart_languages = {
     "Language.URDU": "ur_PK",
     "Language.XHOSA": "xh_ZA",
     "Language.GALICIAN": "gl_ES",
-    "Language.SLOVENIAN": "sl_SI"
-    
+    "Language.SLOVENIAN": "sl_SI",
 }
 
-linguaToBarkLanguages = {
+lingua_to_bark_languages = {
     "Language.ENGLISH": "v2/en_speaker_6",
     "Language.CHINESE": "v2/zh_speaker_1",
     "Language.GERMAN": "v2/de_speaker_2",
@@ -68,64 +103,54 @@ linguaToBarkLanguages = {
     "Language.TURKISH": "v2/tr_speaker_2",
     "Language.POLISH": "v2/pl_speaker_7",
     "Language.ITALIAN": "v2/it_speaker_4",
-    "Language.HINDI": "v2/hi_speaker_6"
-    }
-\
-import argparse
-import io
-import os
-import speech_recognition as sr
-import whisper
-import torch
-from lingua import Language, LanguageDetectorBuilder
-from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
-
-#Bark requieres 12GB of VRAM, so we need to offload it to the CPU
-os.environ["SUNO_OFFLOAD_CPU"] = "True"    
-os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
-
-bartModel = MBartForConditionalGeneration.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
-tokenizer = MBart50TokenizerFast.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
-import nltk  # we'll use this to split into sentences
-from bark.generation import (
-    generate_text_semantic,
-    preload_models,
-)
-from bark import generate_audio, SAMPLE_RATE
-import numpy as np
-from scipy.io.wavfile import write as write_wav
-import scipy.io.wavfile as wav
-from IPython.display import Audio
-import sounddevice as sd
-
-
-from datetime import datetime, timedelta
-from queue import Queue
-from tempfile import NamedTemporaryFile
-from time import sleep
-from sys import platform
-
+    "Language.HINDI": "v2/hi_speaker_6",
+}
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="medium", help="Model to use",
-                        choices=["tiny", "base", "small", "medium", "large"])
-    parser.add_argument("--non_english", action='store_true',
-                        help="Don't use the english model.")
-    parser.add_argument("--energy_threshold", default=1000,
-                        help="Energy level for mic to detect.", type=int)
-    parser.add_argument("--record_timeout", default=2,
-                        help="How real time the recording is in seconds.", type=float)
-    parser.add_argument("--phrase_timeout", default=3,
-                        help="How much empty space between recordings before we "
-                             "consider it a new line in the transcription.", type=float)
-    if 'linux' in platform:
-        parser.add_argument("--default_microphone", default='pulse',
-                            help="Default microphone name for SpeechRecognition. "
-                                 "Run this with 'list' to view available Microphones.", type=str)
-        parser.add_argument("--default_microphone2", default='pulse',
-                            help="Default microphone name for SpeechRecognition. "
-                                 "Run this with 'list' to view available Microphones.", type=str)
+    parser.add_argument(
+        "--model",
+        default="medium",
+        help="Model to use",
+        choices=["tiny", "base", "small", "medium", "large"],
+    )
+    parser.add_argument(
+        "--non_english", action="store_true", help="Don't use the english model."
+    )
+    parser.add_argument(
+        "--energy_threshold",
+        default=1000,
+        help="Energy level for mic to detect.",
+        type=int,
+    )
+    parser.add_argument(
+        "--record_timeout",
+        default=2,
+        help="How real time the recording is in seconds.",
+        type=float,
+    )
+    parser.add_argument(
+        "--phrase_timeout",
+        default=3,
+        help="How much empty space between recordings before we "
+        "consider it a new line in the transcription.",
+        type=float,
+    )
+    if "linux" in platform:
+        parser.add_argument(
+            "--default_microphone",
+            default="pulse",
+            help="Default microphone name for SpeechRecognition. "
+            "Run this with 'list' to view available Microphones.",
+            type=str,
+        )
+        parser.add_argument(
+            "--default_microphone2",
+            default="pulse",
+            help="Default microphone name for SpeechRecognition. "
+            "Run this with 'list' to view available Microphones.",
+            type=str,
+        )
     args = parser.parse_args()
 
     # The last time a recording was retrieved from the queue.
@@ -139,17 +164,17 @@ def main():
     recorder.energy_threshold = args.energy_threshold
     # Definitely do this, dynamic energy compensation lowers the energy threshold dramatically to a point where the SpeechRecognizer never stops recording.
     recorder.dynamic_energy_threshold = False
-    detected_language1 = Language.ENGLISH  #Set placeholder value to English
-    detected_language2 = Language.ENGLISH 
-    
+    detected_language1 = Language.ENGLISH  # Set placeholder value to English
+    detected_language2 = Language.ENGLISH
+
     # Important for linux users.
     # Prevents permanent application hang and crash by using the wrong Microphone
-    if 'linux' in platform:
+    if "linux" in platform:
         mic_name = args.default_microphone
-        if not mic_name or mic_name == 'list':
+        if not mic_name or mic_name == "list":
             print("Available microphone devices are: ")
             for index, name in enumerate(sr.Microphone.list_microphone_names()):
-                print(f"Microphone with name \"{name}\" found")
+                print(f'Microphone with name "{name}" found')
             return
         else:
             for index, name in enumerate(sr.Microphone.list_microphone_names()):
@@ -172,16 +197,13 @@ def main():
     phrase_timeout = args.phrase_timeout
 
     temp_file = NamedTemporaryFile().name
-    
+
     # Initialize the Recognizer
     recognizer = sr.Recognizer()
     with source1 as mic1, source2 as mic2:
         recognizer.adjust_for_ambient_noise(mic1)
         recognizer.adjust_for_ambient_noise(mic2)
- 
-   
-    
-    
+
     def play_audio(file_path):
         # Read the WAV file
         sample_rate, audio_data = wav.read(file_path)
@@ -193,7 +215,7 @@ def main():
         sd.play(audio_data, sample_rate)
         sd.wait()
 
-    def record_callback(_, audio:sr.AudioData) -> None:
+    def record_callback(_, audio: sr.AudioData) -> None:
         """
         Threaded callback function to receive audio data when recordings finish.
         audio: An AudioData containing the recorded bytes.
@@ -204,14 +226,22 @@ def main():
 
     # Create a background thread that will pass us raw audio bytes.
     # We could do this manually but SpeechRecognizer provides a nice helper.
-    recorder.listen_in_background(source1, record_callback, phrase_time_limit=record_timeout)
-    recorder.listen_in_background(source2, record_callback, phrase_time_limit=record_timeout)
+    recorder.listen_in_background(
+        source1, record_callback, phrase_time_limit=record_timeout
+    )
+    recorder.listen_in_background(
+        source2, record_callback, phrase_time_limit=record_timeout
+    )
 
     # Cue the user that we're ready to go.
     print("Model loaded.\n")
-    translation_to_speaker1 = ['']  # Define and initialize the variable outside the if block
-    translation_to_speaker2 = ['']  # Define and initialize the variable outside the if block
-    transcription = ['']
+    translation_to_speaker1 = [
+        ""
+    ]  # Define and initialize the variable outside the if block
+    translation_to_speaker2 = [
+        ""
+    ]  # Define and initialize the variable outside the if block
+    transcription = [""]
     while True:
         try:
             now = datetime.utcnow()
@@ -220,7 +250,9 @@ def main():
                 phrase_complete = False
                 # If enough time has passed between recordings, consider the phrase complete.
                 # Clear the current working audio buffer to start over with the new data.
-                if phrase_time and now - phrase_time > timedelta(seconds=phrase_timeout):
+                if phrase_time and now - phrase_time > timedelta(
+                    seconds=phrase_timeout
+                ):
                     last_sample = bytes()
                     phrase_complete = True
                 # This is the last time we received new audio data from the queue.
@@ -232,124 +264,26 @@ def main():
                     last_sample += data
 
                 # Use AudioData to convert the raw data to wav data.
-                audio_data = sr.AudioData(last_sample, source1.SAMPLE_RATE, source1.SAMPLE_WIDTH)
+                audio_data = sr.AudioData(
+                    last_sample, source1.SAMPLE_RATE, source1.SAMPLE_WIDTH
+                )
                 wav_data = io.BytesIO(audio_data.get_wav_data())
 
                 # Write wav data to the temporary file as bytes.
-                with open(temp_file, 'w+b') as f:
+                with open(temp_file, "w+b") as f:
                     f.write(wav_data.read())
 
                 # Read the transcription.
-                result = audio_model.transcribe(temp_file, fp16=torch.cuda.is_available())
-                text = result['text'].strip()
-                if text: 
-                # Detect the language of the transcribed text
+                result = audio_model.transcribe(
+                    temp_file, fp16=torch.cuda.is_available()
+                )
+                text = result["text"].strip()
+                if text:
+                    # Detect the language of the transcribed text
                     detected_language1 = detector.detect_language_of(text)
                 else:
                     detected_language1 = "Unknown"  # Handle empty text
-                
-                 # If we detected a pause between recordings, add a new item to our transcription.
-                # Otherwise edit the existing one.
-                if phrase_complete:
-                    transcription.append(text)
-                else:
-                    transcription[-1] = text
-                # If you want to add the detected language to the output, you can modify the printing code
-                print(f"(Detected Language 1: {detected_language1})")
-                print(f" (Detected Language 2: {detected_language2})")
 
-                
-                translation_to_speaker2 = ['']
-                # Ensure that the detected language is a valid key in the dictionary
-                if repr(detected_language1) in lingua_to_mbart_languages and repr(detected_language2) in lingua_to_mbart_languages:
-                    mBartInput = lingua_to_mbart_languages[repr(detected_language1)]
-                    print("MBart Input Language:", mBartInput)  # Debug print statement
-                    # translate Spanish to English
-                    tokenizer.src_lang = mBartInput  
-                    encoded_text = tokenizer(text, return_tensors="pt")
-                    generated_tokens = bartModel.generate(
-                    **encoded_text,
-                    forced_bos_token_id=tokenizer.lang_code_to_id[lingua_to_mbart_languages[repr(detected_language2)]]  #Translate to Speaker 1's language
-                    )
-                    translation_to_speaker2 = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
-
-                    print("Translation to Speaker 2: ", translation_to_speaker2)
-                else:
-                    print("Detected language not found in dictionary:", detected_language2)
-                    translation_to_speaker2 = ['']
-                # Clear the console to reprint the updated transcription.
-                os.system('cls' if os.name=='nt' else 'clear')
-                
-                for line in translation_to_speaker2:
-                    print(line)
-                if translation_to_speaker2 != [''] and repr(detected_language2) in linguaToBarkLanguages:   #Check to see if the audio can be generated using Bark
-                    text_prompt1 = translation_to_speaker2[0]
-                
-                    text_prompt1.replace("\n", " ").strip()
-                    # We split longer text into sentences using nltk and generate the sentences one by one.
-                    sentences1 = nltk.sent_tokenize(text_prompt1)
-                
-                    speakerBarkLanguage2 = linguaToBarkLanguages[repr(detected_language2)]
-
-                    silence = np.zeros(int(0.20 * SAMPLE_RATE))  # fifth second of silence
-
-                    pieces = []
-                    for sentence in sentences1:
-                        print(sentence)
-                        audio_array = generate_audio(sentence, history_prompt=speakerBarkLanguage2)
-                        pieces += [audio_array, silence.copy()]
-                    concatenated_audio = np.concatenate(pieces)
-
-                    # save audio to disk
-                    output_wav_path1 = "Speaker1Output.wav"
-                    write_wav(output_wav_path1, SAMPLE_RATE, concatenated_audio)
-                    # play audio
-                    play_audio(output_wav_path1)
-
-                
-                
-                # Flush stdout.
-                print('', end='', flush=True)
-                
-
-                # Infinite loops are bad for processors, must sleep.
-                sleep(0.25)
-
-                #Now do the same for Speaker 2
-
-                now = datetime.utcnow()
-            # Pull raw recorded audio from the queue.
-            if not data_queue.empty():
-                phrase_complete = False
-                # If enough time has passed between recordings, consider the phrase complete.
-                # Clear the current working audio buffer to start over with the new data.
-                if phrase_time and now - phrase_time > timedelta(seconds=phrase_timeout):
-                    last_sample = bytes()
-                    phrase_complete = True
-                # This is the last time we received new audio data from the queue.
-                phrase_time = now
-
-                # Concatenate our current audio data with the latest audio data.
-                while not data_queue.empty():
-                    data = data_queue.get()
-                    last_sample += data
-                # Use AudioData to convert the raw data to wav data.
-                audio_data = sr.AudioData(last_sample, source1.SAMPLE_RATE, source1.SAMPLE_WIDTH)
-                wav_data = io.BytesIO(audio_data.get_wav_data())
-
-                # Write wav data to the temporary file as bytes.
-                with open(temp_file, 'w+b') as f:
-                    f.write(wav_data.read())
-
-                # Read the transcription.
-                result = audio_model.transcribe(temp_file, fp16=torch.cuda.is_available())
-                text = result['text'].strip()
-                if text: 
-                # Detect the language of the transcribed text
-                    detected_language2 = detector.detect_language_of(text)
-                else:
-                    detected_language2 = "Unknown"  # Handle empty text
-                
                 # If we detected a pause between recordings, add a new item to our transcription.
                 # Otherwise edit the existing one.
                 if phrase_complete:
@@ -359,43 +293,183 @@ def main():
                 # If you want to add the detected language to the output, you can modify the printing code
                 print(f"(Detected Language 1: {detected_language1})")
                 print(f" (Detected Language 2: {detected_language2})")
-                
+
+                translation_to_speaker2 = [""]
                 # Ensure that the detected language is a valid key in the dictionary
-                if repr(detected_language2) in lingua_to_mbart_languages and repr(detected_language1) in lingua_to_mbart_languages:
+                if (
+                    repr(detected_language1) in lingua_to_mbart_languages
+                    and repr(detected_language2) in lingua_to_mbart_languages
+                ):
                     mBartInput = lingua_to_mbart_languages[repr(detected_language1)]
                     print("MBart Input Language:", mBartInput)  # Debug print statement
                     # translate Spanish to English
-                    tokenizer.src_lang = mBartInput  
+                    tokenizer.src_lang = mBartInput
                     encoded_text = tokenizer(text, return_tensors="pt")
                     generated_tokens = bartModel.generate(
-                    **encoded_text,
-                    forced_bos_token_id=tokenizer.lang_code_to_id[lingua_to_mbart_languages[repr(detected_language1)]]  #Translate to Speaker 1's language
+                        **encoded_text,
+                        forced_bos_token_id=tokenizer.lang_code_to_id[
+                            lingua_to_mbart_languages[repr(detected_language2)]
+                        ],  # Translate to Speaker 1's language
                     )
-                    translation_to_speaker1 = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
+                    translation_to_speaker2 = tokenizer.batch_decode(
+                        generated_tokens, skip_special_tokens=True
+                    )
+
+                    print("Translation to Speaker 2: ", translation_to_speaker2)
+                else:
+                    print(
+                        "Detected language not found in dictionary:", detected_language2
+                    )
+                    translation_to_speaker2 = [""]
+                # Clear the console to reprint the updated transcription.
+                os.system("cls" if os.name == "nt" else "clear")
+
+                for line in translation_to_speaker2:
+                    print(line)
+                if (
+                    translation_to_speaker2 != [""]
+                    and repr(detected_language2) in lingua_to_bark_languages
+                ):  # Check to see if the audio can be generated using Bark
+                    text_prompt1 = translation_to_speaker2[0]
+
+                    text_prompt1.replace("\n", " ").strip()
+                    # We split longer text into sentences using nltk and generate the sentences one by one.
+                    sentences1 = nltk.sent_tokenize(text_prompt1)
+
+                    speaker_bark_language2 = lingua_to_bark_languages[
+                        repr(detected_language2)
+                    ]
+
+                    silence = np.zeros(
+                        int(0.20 * SAMPLE_RATE)
+                    )  # fifth second of silence
+
+                    pieces = []
+                    for sentence in sentences1:
+                        print(sentence)
+                        audio_array = generate_audio(
+                            sentence, history_prompt=speaker_bark_language2
+                        )
+                        pieces += [audio_array, silence.copy()]
+                    concatenated_audio = np.concatenate(pieces)
+
+                    # save audio to disk
+                    output_wav_path1 = "Speaker1Output.wav"
+                    write_wav(output_wav_path1, SAMPLE_RATE, concatenated_audio)
+                    # play audio
+                    play_audio(output_wav_path1)
+
+                # Flush stdout.
+                print("", end="", flush=True)
+
+                # Infinite loops are bad for processors, must sleep.
+                sleep(0.25)
+
+                # Now do the same for Speaker 2
+
+                now = datetime.utcnow()
+            # Pull raw recorded audio from the queue.
+            if not data_queue.empty():
+                phrase_complete = False
+                # If enough time has passed between recordings, consider the phrase complete.
+                # Clear the current working audio buffer to start over with the new data.
+                if phrase_time and now - phrase_time > timedelta(
+                    seconds=phrase_timeout
+                ):
+                    last_sample = bytes()
+                    phrase_complete = True
+                # This is the last time we received new audio data from the queue.
+                phrase_time = now
+
+                # Concatenate our current audio data with the latest audio data.
+                while not data_queue.empty():
+                    data = data_queue.get()
+                    last_sample += data
+                # Use AudioData to convert the raw data to wav data.
+                audio_data = sr.AudioData(
+                    last_sample, source1.SAMPLE_RATE, source1.SAMPLE_WIDTH
+                )
+                wav_data = io.BytesIO(audio_data.get_wav_data())
+
+                # Write wav data to the temporary file as bytes.
+                with open(temp_file, "w+b") as f:
+                    f.write(wav_data.read())
+
+                # Read the transcription.
+                result = audio_model.transcribe(
+                    temp_file, fp16=torch.cuda.is_available()
+                )
+                text = result["text"].strip()
+                if text:
+                    # Detect the language of the transcribed text
+                    detected_language2 = detector.detect_language_of(text)
+                else:
+                    detected_language2 = "Unknown"  # Handle empty text
+
+                # If we detected a pause between recordings, add a new item to our transcription.
+                # Otherwise edit the existing one.
+                if phrase_complete:
+                    transcription.append(text)
+                else:
+                    transcription[-1] = text
+                # If you want to add the detected language to the output, you can modify the printing code
+                print(f"(Detected Language 1: {detected_language1})")
+                print(f" (Detected Language 2: {detected_language2})")
+
+                # Ensure that the detected language is a valid key in the dictionary
+                if (
+                    repr(detected_language2) in lingua_to_mbart_languages
+                    and repr(detected_language1) in lingua_to_mbart_languages
+                ):
+                    mBartInput = lingua_to_mbart_languages[repr(detected_language1)]
+                    print("MBart Input Language:", mBartInput)  # Debug print statement
+                    # translate Spanish to English
+                    tokenizer.src_lang = mBartInput
+                    encoded_text = tokenizer(text, return_tensors="pt")
+                    generated_tokens = bartModel.generate(
+                        **encoded_text,
+                        forced_bos_token_id=tokenizer.lang_code_to_id[
+                            lingua_to_mbart_languages[repr(detected_language1)]
+                        ],  # Translate to Speaker 1's language
+                    )
+                    translation_to_speaker1 = tokenizer.batch_decode(
+                        generated_tokens, skip_special_tokens=True
+                    )
 
                     print("Translation to Speaker 1:", translation_to_speaker1)
                 else:
-                    print("Detected language not found in dictionary:", detected_language1)
-                    translation_to_speaker1 = ['']
+                    print(
+                        "Detected language not found in dictionary:", detected_language1
+                    )
+                    translation_to_speaker1 = [""]
                 # Clear the console to reprint the updated transcription.
-                os.system('cls' if os.name=='nt' else 'clear')
-                
+                os.system("cls" if os.name == "nt" else "clear")
+
                 for line in translation_to_speaker1:
                     print(line)
-                if translation_to_speaker1 != [''] and repr(detected_language1) in linguaToBarkLanguages:   #Translate to Speaker 1' sound if possible
+                if (
+                    translation_to_speaker1 != [""]
+                    and repr(detected_language1) in lingua_to_bark_languages
+                ):  # Translate to Speaker 1' sound if possible
                     text_prompt2 = translation_to_speaker1[0]
-                
+
                     text_prompt2.replace("\n", " ").strip()
                     # We split longer text into sentences using nltk and generate the sentences one by one.
                     sentences2 = nltk.sent_tokenize(text_prompt2)
-            
-                    speakerBarkLanguage1 = linguaToBarkLanguages[repr(detected_language1)]
-                    silence = np.zeros(int(0.20 * SAMPLE_RATE))  # fifth second of silence
+
+                    speaker_bark_language1 = lingua_to_bark_languages[
+                        repr(detected_language1)
+                    ]
+                    silence = np.zeros(
+                        int(0.20 * SAMPLE_RATE)
+                    )  # fifth second of silence
 
                     pieces = []
                     for sentence in sentences2:
                         print(sentence)
-                        audio_array = generate_audio(sentence, history_prompt=speakerBarkLanguage1)
+                        audio_array = generate_audio(
+                            sentence, history_prompt=speaker_bark_language1
+                        )
                         pieces += [audio_array, silence.copy()]
                     concatenated_audio = np.concatenate(pieces)
 
@@ -404,23 +478,14 @@ def main():
                     write_wav(output_wav_path2, SAMPLE_RATE, concatenated_audio)
                     # play audio
                     play_audio(output_wav_path2)
-                     # Flush stdout.
-                print('', end='', flush=True)
-                
+                    # Flush stdout.
+                print("", end="", flush=True)
 
                 # Infinite loops are bad for processors, must sleep.
                 sleep(0.25)
 
-
-                
-
-
         except KeyboardInterrupt:
             break
-
-    
-    
-   
 
 
 if __name__ == "__main__":
