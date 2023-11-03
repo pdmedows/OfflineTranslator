@@ -62,6 +62,7 @@ This project is a Python-based application that seamlessly translates and genera
 5. When speech is detected, the system automatically identifies the language and provides real-time translation.
 6. The translated text will be displayed on the console, along with the detected language and its translation.
 7. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
+
 **OR: USE THE SCRIPT THAT RELIES ON ONE DEFAULT LINUX MICRHONE**
 1. To start the application, run the following command:
 
