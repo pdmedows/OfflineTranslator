@@ -61,15 +61,20 @@ This project is a Python-based application that seamlessly translates and genera
 
     source2 = sr.Microphone(sample_rate=16000, device_index=microphone_index2)
     ```
-3. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** 
+3. If you are running the script on a computer with a GPU that has less than 12-15 GB of VRAM, enable Bark to run on CPU  **Note that this is present in the current script** 
    ```bash
-    os.environ["SUNO_OFFLOAD_CPU"] = "1"  
-    os.environ["SUNO_USE_SMALL_MODELS"] = "1"  
+    os.environ["SUNO_OFFLOAD_CPU"] = "True"  
+    os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
     ```
-4. The application will continuously listen for audio input from the specified microphone source.
-5. When speech is detected, the system automatically identifies the language and provides real-time translation.
-6. The translated text will be displayed on the console, along with the detected language and its translation.
-7. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
+   Otherwise, enable Bark to run on GPU:
+   ```bash
+    os.environ["SUNO_OFFLOAD_CPU"] = "False"  
+    os.environ["SUNO_USE_SMALL_MODELS"] = "False"  
+    ```
+5. The application will continuously listen for audio input from the specified microphone source.
+6. When speech is detected, the system automatically identifies the language and provides real-time translation.
+7. The translated text will be displayed on the console, along with the detected language and its translation.
+8. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
 
 ### One Microphone Usage
 1. To start the application, run the following command:
