@@ -46,7 +46,7 @@ This project is a Python-based application that seamlessly translates and genera
    - `--phrase_timeout`: Set the time gap between recordings to consider it a new line in the transcription.
 
 
-2. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** `
+2. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** 
    ```bash
     os.environ["SUNO_OFFLOAD_CPU"] = "True"  
     os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
