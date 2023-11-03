@@ -53,7 +53,31 @@ This project is a Python-based application that seamlessly translates and genera
 
     source2 = sr.Microphone(sample_rate=16000, device_index=microphone_index2)
     ```
-4. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** 
+3. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** 
+   ```bash
+    os.environ["SUNO_OFFLOAD_CPU"] = "True"  
+    os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
+    ```
+4. The application will continuously listen for audio input from the specified microphone source.
+5. When speech is detected, the system automatically identifies the language and provides real-time translation.
+6. The translated text will be displayed on the console, along with the detected language and its translation.
+7. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
+**OR: USE THE SCRIPT THAT RELIES ON ONE DEFAULT LINUX MICRHONE**
+1. To start the application, run the following command:
+
+    ```bash
+    python3 LiveTranslationOneMic.py --whisper_model [model_size]  --energy_threshold [threshold] --record_timeout [timeout] --phrase_timeout [timeout]
+    ```
+
+   - `--whisper_model`: Specify the Whisper model size (choices: tiny, base, small, medium, large).  The default is medium.
+   
+   - `--energy_threshold`: Set the energy threshold for microphone detection.
+   - `--record_timeout`: Define the real-time recording duration in seconds.
+   - `--phrase_timeout`: Set the time gap between recordings to consider it a new line in the transcription.
+
+
+    ```
+2. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** 
    ```bash
     os.environ["SUNO_OFFLOAD_CPU"] = "True"  
     os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
@@ -63,10 +87,6 @@ This project is a Python-based application that seamlessly translates and genera
 5. The translated text will be displayed on the console, along with the detected language and its translation.
 6. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
 
-**If you wish to see the original branch, see the main branch** [Link to Main Branch](https://github.com/pdmedows/OfflineTranslator/tree/main)
-
-
-<br>
 <p align="center">
 <img src="images/Drawing(1).png" ></img>
 </p>
