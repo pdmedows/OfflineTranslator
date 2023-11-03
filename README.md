@@ -62,8 +62,8 @@ This project is a Python-based application that seamlessly translates and genera
     ```
 3. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** 
    ```bash
-    os.environ["SUNO_OFFLOAD_CPU"] = "True"  
-    os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
+    os.environ["SUNO_OFFLOAD_CPU"] = "1"  
+    os.environ["SUNO_USE_SMALL_MODELS"] = "1"  
     ```
 4. The application will continuously listen for audio input from the specified microphone source.
 5. When speech is detected, the system automatically identifies the language and provides real-time translation.
