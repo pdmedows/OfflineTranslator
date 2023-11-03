@@ -109,14 +109,12 @@ lingua_to_bark_languages = {
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model",
+        "--whisper_model",
         default="medium",
         help="Model to use",
         choices=["tiny", "base", "small", "medium", "large"],
     )
-    parser.add_argument(
-        "--non_english", action="store_true", help="Don't use the english model."
-    )
+    
     parser.add_argument(
         "--energy_threshold",
         default=1000,
@@ -189,8 +187,7 @@ def main():
     # Include all languages available in the library.
     detector = LanguageDetectorBuilder.from_all_spoken_languages().build()
     model = args.model
-    if args.model != "large" and not args.non_english:
-        model = model + ".en"
+    
     audio_model = whisper.load_model(model)
 
     record_timeout = args.record_timeout
