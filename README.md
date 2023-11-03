@@ -1,7 +1,7 @@
 # OfflineTranslator
 <br>
 <p align="center">
-<img src="Drawing1(2).png" ></img>
+<img src="images/Drawing1(2).png" ></img>
 </p>
 <br>
 
@@ -52,7 +52,7 @@ This project is a Python-based application that seamlessly translates and genera
 
 <br>
 <p align="center">
-<img src="Drawing(1).png" ></img>
+<img src="images/Drawing(1).png" ></img>
 </p>
 <br>
 
