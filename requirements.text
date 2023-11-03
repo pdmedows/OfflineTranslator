@@ -10,3 +10,4 @@ PyAudio
 ffmpeg-python
 sentencepiece
 IPython
+protobuf
