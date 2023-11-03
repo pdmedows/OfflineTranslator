@@ -45,6 +45,11 @@ This project is a Python-based application that seamlessly translates and genera
    - `--record_timeout`: Define the real-time recording duration in seconds.
    - `--phrase_timeout`: Set the time gap between recordings to consider it a new line in the transcription.
 
+
+2. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** ```bash
+    os.environ["SUNO_OFFLOAD_CPU"] = "True"
+os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
+    ```
 2. The application will continuously listen for audio input from the specified microphone source.
 3. When speech is detected, the system automatically identifies the language and provides real-time translation.
 4. The translated text will be displayed on the console, along with the detected language and its translation.
