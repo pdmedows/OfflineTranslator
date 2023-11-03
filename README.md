@@ -21,7 +21,7 @@ This project is a Python-based application that seamlessly translates and genera
 ### Prerequisites
 - Python 3.x
 - Required Python packages and dependencies (specified in `requirements.text`)
-
+**Two Options: One Microphone or Two Microphones**
 ### Setup
 1. Clone this repository to your local machine.
 2. Install the necessary dependencies by running the following command:
@@ -32,7 +32,7 @@ This project is a Python-based application that seamlessly translates and genera
 
 3. Ensure that your machine meets the hardware requirements for running Bark for audio generation.
 
-### Usage
+### Two-Microphone Usage
 1. To start the application, run the following command:
 
     ```bash
@@ -63,7 +63,7 @@ This project is a Python-based application that seamlessly translates and genera
 6. The translated text will be displayed on the console, along with the detected language and its translation.
 7. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
 
-**OR: USE THE SCRIPT THAT RELIES ON ONE DEFAULT LINUX MICRHONE**
+### One Microphone Usage
 1. To start the application, run the following command:
 
     ```bash
