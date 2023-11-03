@@ -10,6 +10,7 @@
 ### Description
 This project is a Python-based application that seamlessly translates and generates audio content in real time. It listens to incoming audio, detects speech, identifies the language, translates the text, and generates audio in the target language. 
 ### Features
+- **Two Options: One Microphone or Two Microphones** To use Linux's default microphone, use LiveTranslationOneMic.py
 - **Real-time Audio Processing:** The application continuously listens to audio input and processes it in real time.
 - **Speech Detection:** Utilizes the SpeechRecognition library to detect speech and distinguish spoken content from silence.
 - **Language Detection:** Employs OpenAI Whisper to automatically detect the language of the incoming audio, ensuring accurate language identification.
@@ -21,7 +22,7 @@ This project is a Python-based application that seamlessly translates and genera
 ### Prerequisites
 - Python 3.x
 - Required Python packages and dependencies (specified in `requirements.text`)
-**Two Options: One Microphone or Two Microphones**
+
 ### Setup
 1. Clone this repository to your local machine.
 2. Install the necessary dependencies by running the following command:
