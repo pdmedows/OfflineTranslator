@@ -23,8 +23,8 @@ from scipy.io.wavfile import write as write_wav
 from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
 
 # Bark requieres 12GB of VRAM, so we need to offload it to the CPU
-os.environ["SUNO_OFFLOAD_CPU"] = "True"
-os.environ["SUNO_USE_SMALL_MODELS"] = "True"
+os.environ["SUNO_OFFLOAD_CPU"] = "1"
+os.environ["SUNO_USE_SMALL_MODELS"] = "1"
 
 bartModel = MBartForConditionalGeneration.from_pretrained(
     "facebook/mbart-large-50-many-to-many-mmt"
