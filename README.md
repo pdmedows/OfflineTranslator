@@ -14,7 +14,7 @@
 
 
 ### Description
-This project is a Python-based application that seamlessly translates and generates audio content in real time. It listens to incoming audio, detects speech, identifies the language, translates the text, and generates audio in the target language. 
+This project is a Python-based application that seamlessly translates and generates audio content in real time, just like the world-renowned Babel Fish. It listens to incoming audio, detects speech, identifies the language, transcribes the speech into text, translates the text, and generates audio in the target language. 
 ### Features
 - **Two Options: One Microphone or Two Microphones** To use Linux's default microphone, use LiveTranslationOneMic.py
 - **Real-time Audio Processing:** The application continuously listens to audio input and processes it in real time.
