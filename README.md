@@ -20,7 +20,7 @@ This project is a Python-based application that seamlessly translates and genera
 
 ### Prerequisites
 - Python 3.x
-- Required Python packages and dependencies (specified in `requirements.txt`)
+- Required Python packages and dependencies (specified in `requirements.text`)
 
 ### Setup
 1. Clone this repository to your local machine.
