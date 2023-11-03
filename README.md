@@ -36,7 +36,7 @@ This project is a Python-based application that seamlessly translates and genera
 1. To start the application, run the following command:
 
     ```bash
-    python3 your_script_name.py --whisper_model [model_size]  --energy_threshold [threshold] --record_timeout [timeout] --phrase_timeout [timeout]
+    python3 LiveTranslationTwoMic.py --whisper_model [model_size]  --energy_threshold [threshold] --record_timeout [timeout] --phrase_timeout [timeout]
     ```
 
    - `--whisper_model`: Specify the Whisper model size (choices: tiny, base, small, medium, large).  The default is medium.
