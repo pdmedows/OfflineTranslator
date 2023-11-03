@@ -22,9 +22,7 @@ from lingua import Language, LanguageDetectorBuilder
 from scipy.io.wavfile import write as write_wav
 from transformers import MBart50TokenizerFast, MBartForConditionalGeneration
 
-# Bark requieres 12GB of VRAM, so we need to offload it to the CPU
-os.environ["SUNO_OFFLOAD_CPU"] = "1"
-os.environ["SUNO_USE_SMALL_MODELS"] = "1"
+
 
 bartModel = MBartForConditionalGeneration.from_pretrained(
     "facebook/mbart-large-50-many-to-many-mmt"
@@ -164,6 +162,9 @@ def main():
     recorder.dynamic_energy_threshold = False
     detected_language1 = Language.ENGLISH  # Set placeholder value to English
     detected_language2 = Language.ENGLISH
+    # Bark requieres 12GB of VRAM, so we need to offload it to the CPU
+    os.environ["SUNO_OFFLOAD_CPU"] = "1"
+    os.environ["SUNO_USE_SMALL_MODELS"] = "1"
 
     # Create the microphone instances
     source1 = sr.Microphone(sample_rate=16000, device_index=microphone_index1)
