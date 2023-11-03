@@ -46,14 +46,15 @@ This project is a Python-based application that seamlessly translates and genera
    - `--phrase_timeout`: Set the time gap between recordings to consider it a new line in the transcription.
 
 
-2. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** ```bash
+2. If you are running the script on a computer on small GPU's, enable Bark to run on CPU  **Note that this is present in the current script** `
+   ``bash
     os.environ["SUNO_OFFLOAD_CPU"] = "True"
 os.environ["SUNO_USE_SMALL_MODELS"] = "True"  
     ```
-2. The application will continuously listen for audio input from the specified microphone source.
-3. When speech is detected, the system automatically identifies the language and provides real-time translation.
-4. The translated text will be displayed on the console, along with the detected language and its translation.
-5. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
+3. The application will continuously listen for audio input from the specified microphone source.
+4. When speech is detected, the system automatically identifies the language and provides real-time translation.
+5. The translated text will be displayed on the console, along with the detected language and its translation.
+6. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
 
 **If you wish to see the original branch, see the main branch** [Link to Main Branch](https://github.com/pdmedows/OfflineTranslator/tree/main)
 
