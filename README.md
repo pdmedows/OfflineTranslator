@@ -20,6 +20,7 @@ This project is a Python-based application that seamlessly translates and genera
 - **Real-time Audio Processing:** The application continuously listens to audio input and processes it in real time.
 - **Speech Detection:** Utilizes the SpeechRecognition library to detect speech and distinguish spoken content from silence.
 - **Language Detection:** Employs OpenAI Whisper to automatically detect the language of the incoming audio, ensuring accurate language identification.
+- **Language Transcription** Employs OpenAI Whisper to transcribe incoming audio.
 - **Multilingual Translation:** Translates the detected speech to the target language using Lingua, providing clear and effective communication across language barriers.
 - **Audio Generation:** Uses Bark, a text-to-speech synthesis system, to generate audio content based on the translated text.
 - **Language Mapping:** Comprehensive dictionaries and language codes enable language mapping for translation and audio generation.
