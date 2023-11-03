@@ -186,7 +186,7 @@ def main():
     # Load / Download model
     # Include all languages available in the library.
     detector = LanguageDetectorBuilder.from_all_spoken_languages().build()
-    model = args.model
+    model = args.whisper_model
     
     audio_model = whisper.load_model(model)
 
