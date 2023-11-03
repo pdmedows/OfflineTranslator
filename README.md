@@ -50,6 +50,9 @@ This project is a Python-based application that seamlessly translates and genera
 4. The translated text will be displayed on the console, along with the detected language and its translation.
 5. If the detected language supports audio generation, the application will generate and play audio based on the translated text.
 
+**If you wish to see the original branch, see the main branch** [Link to Main Branch](https://github.com/pdmedows/OfflineTranslator/tree/main)
+
+
 <br>
 <p align="center">
 <img src="images/Drawing(1).png" ></img>
