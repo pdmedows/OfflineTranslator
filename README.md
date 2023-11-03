@@ -44,7 +44,7 @@ This project is a Python-based application that seamlessly translates and genera
    - `--energy_threshold`: Set the energy threshold for microphone detection.
    - `--record_timeout`: Define the real-time recording duration in seconds.
    - `--phrase_timeout`: Set the time gap between recordings to consider it a new line in the transcription.
-
+```
 2. Specify your desired microphones
    ```bash
    # Create the microphone instances
