@@ -1,10 +1,8 @@
 speechrecognition==3.8.1
-whisper==0.1.5
-torch==1.9.0
+openai-whisper==0.1.5
 lingua==1.0.0
 transformers==4.12.2
 nltk==3.6.5
-bark-lang==0.5.2
 sounddevice==0.5.1
 scipy==1.7.3
 PyAudio==0.2.11
