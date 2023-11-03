@@ -36,11 +36,11 @@ This project is a Python-based application that seamlessly translates and genera
 1. To start the application, run the following command:
 
     ```bash
-    python3 your_script_name.py --model [model_size] --non_english --energy_threshold [threshold] --record_timeout [timeout] --phrase_timeout [timeout]
+    python3 your_script_name.py --whisper_model [model_size]  --energy_threshold [threshold] --record_timeout [timeout] --phrase_timeout [timeout]
     ```
 
-   - `--model`: Specify the model size (choices: tiny, base, small, medium, large).
-   - `--non_english`: **(ALWAYS USE THIS FOR MULTILINGUAL TRANSLATION)** Use this flag to exclude the English mode 
+   - `--whisper_model`: Specify the Whisper model size (choices: tiny, base, small, medium, large).  The default is medium.
+   
    - `--energy_threshold`: Set the energy threshold for microphone detection.
    - `--record_timeout`: Define the real-time recording duration in seconds.
    - `--phrase_timeout`: Set the time gap between recordings to consider it a new line in the transcription.
