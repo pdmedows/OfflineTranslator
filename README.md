@@ -108,12 +108,6 @@ This project is a Python-based application that seamlessly translates and genera
 
 
 
-### Language Mapping
-The project includes dictionaries for language codes and mapping between languages to facilitate translation and audio generation. You can expand these dictionaries to add support for additional languages as needed.
-
-### Important Notes
-- Ensure that your machine has the necessary hardware resources to run Bark for audio generation, especially for larger models.
-- This project provides an example of a real-time multilingual audio translation and generation system. You can customize and extend its functionality to suit specific use cases and requirements.
 
 ### Acknowledgments
 This project utilizes various open-source libraries and models, including Lingua, OpenAI Whisper, Hugging Face Transformers, Bark, SpeechRecognition, and more. I appreciate the contributions of these projects to the development of this application.
